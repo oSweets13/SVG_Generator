@@ -5,62 +5,48 @@ const {colors} = require ('./lib/colors')
 const {Triangle, Circle, Square} = require('./lib/shapes')
 
 
-const userQuestions = [
-    // 3 letters
-{
-    type:'input',
-    name:'threeLetters',
-    message:'Enter the 3 letters you would desire on the logo',
-
-    validate: threeLettersInput => {
-        if(threeLettersInput.text.length > 3) {
-            console.log('Please enter 3 letters');
-            return false;
-        }   else {
-            return true;
+function promptUser() {
+    inquirer
+      .prompt([
+        // Text prompt
+        {
+          type: "input",
+          message:
+            "What text would you like you logo to display? (Enter up to three characters)",
+          name: "text",
+        },
+        // Text color prompt
+        {
+          type: "input",
+          message:
+            "Choose text color (Enter color keyword OR a hexadecimal number)",
+          name: "textColor",
+        },
+        // Shape choice prompt
+        {
+          type: "list",
+          message: "What shape would you like the logo to render?",
+          choices: ["Triangle", "Square", "Circle"],
+          name: "shape",
+        },
+        // Shape color prompt
+        {
+          type: "input",
+          message:
+            "Choose shapes color (Enter color keyword OR a hexadecimal number)",
+          name: "shapeBackgroundColor",
+        },
+      ])
+      .then((answers) => {
+        // Error handling for text prompt (user must enter 3 characters or less for logo to generate)
+        if (answers.text.length > 3) {
+          console.log("Must enter a value of no more than 3 characters");
+          promptUser();
+        } else {
+          // Calling write file function to generate SVG file
+          writeToFile("logo.svg", answers);
         }
-    }
-},
+      });
+  };
 
-    // text color
-{
-    type:'input',
-    name:'textColor',
-    message:'Enter the color you would like the text to be',
-
-    validate: textColorInput => {
-        const colorName = colors.includes(input.toLowerCase());
-        const hexCode = /^#[0-9A-F]{6}$/i.test(input);
-        return colorName || hexCode;
-    }
-},
-
-    // shape
-{
-    type:'list',
-    name:'shape',
-    message:'Please select the type of shape you want',
-    choices: ['Triangle','Circle','Square'],
-},
-
-    // shape color
-{
-    type:'input',
-    name:'shapeColor',
-    message:'Enter the color you would like the shape to be',
-
-    validate: textColorInput => {
-        const colorName = colors.includes(input.toLowerCase());
-        const hexCode = /^#[0-9A-F]{6}$/i.test(input);
-        return colorName || hexCode;
-    }
-}
-]
-.then ((data) => {
-    const svgPath = "./tests/logo.svg"
-    const finalLogo = generateShape(data);
-
-    fs.writeFile(svgPath, generateSVG(finalLogo), (err) =>
-    err ? console.error(err) : console.log('Generated logo!'));
-})
-.catch((err) => console.error(err));
+  promptUser();
